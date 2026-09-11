@@ -1,0 +1,35 @@
+# Python virtual environments
+.venv/
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Test and tooling caches
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local configuration and secrets
+.env
+.env.*
+config/local.yaml
+*.pem
+*.key
+
+# IDE and operating-system files
+.vscode/
+.idea/
+.DS_Store
+
+# Terraform-generated files
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Local logs
+logs/
+*.log

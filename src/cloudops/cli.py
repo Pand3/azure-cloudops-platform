@@ -6,6 +6,7 @@ from typing import Annotated
 import typer
 
 from cloudops import __version__
+from cloudops.api import ApiCheckError, check_api
 from cloudops.config import ConfigError, load_config
 
 app = typer.Typer(
@@ -14,7 +15,10 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 config_app = typer.Typer(help="Manage platform configuration.")
+api_app = typer.Typer(help="Check platform APIs.")
+
 app.add_typer(config_app, name="config")
+app.add_typer(api_app, name="api")
 
 
 @app.callback()
@@ -52,6 +56,38 @@ def validate_config(
     typer.echo(f"Environment: {configuration.project.environment}")
     typer.echo(f"Azure location: {configuration.azure.location}")
     typer.echo(f"Kubernetes namespace: {configuration.kubernetes.namespace}")
+
+
+@api_app.command("check")
+def check_api_command(
+    path: Annotated[
+        Path,
+        typer.Argument(
+            exists=True,
+            dir_okay=False,
+            readable=True,
+            help="Path to the YAML configuration file.",
+        ),
+    ] = Path("config/example.yaml"),
+) -> None:
+    """Check whether the configured REST API is healthy."""
+
+    try:
+        configuration = load_config(path)
+        result = check_api(
+            base_url=str(configuration.api.base_url),
+            timeout_seconds=configuration.api.timeout_seconds,
+        )
+    except (ConfigError, ApiCheckError) as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(code=1) from error
+
+    json_keys = ", ".join(sorted(result.data))
+
+    typer.echo(f"API healthy: {result.url}")
+    typer.echo(f"HTTP status: {result.status_code}")
+    typer.echo(f"Response time: {result.response_time_ms:.2f} ms")
+    typer.echo(f"JSON object keys: {json_keys}")
 
 
 if __name__ == "__main__":

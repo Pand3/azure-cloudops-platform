@@ -1,0 +1,15 @@
+project:
+  name: azure-cloudops-platform
+  environment: dev
+
+azure:
+  location: uksouth
+  resource_group: rg-cloudops-dev
+
+kubernetes:
+  namespace: cloudops
+  replicas: 2
+
+api:
+  base_url: https://httpbin.org
+  timeout_seconds: 10

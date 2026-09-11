@@ -1,5 +1,6 @@
 """Command-line interface for the CloudOps platform."""
 
+import logging
 from pathlib import Path
 from typing import Annotated
 
@@ -8,6 +9,9 @@ import typer
 from cloudops import __version__
 from cloudops.api import ApiCheckError, check_api
 from cloudops.config import ConfigError, load_config
+from cloudops.logging_config import setup_logging
+
+logger = logging.getLogger(__name__)
 
 app = typer.Typer(
     name="cloudops",
@@ -71,7 +75,7 @@ def check_api_command(
     ] = Path("config/example.yaml"),
 ) -> None:
     """Check whether the configured REST API is healthy."""
-
+    setup_logging()
     try:
         configuration = load_config(path)
         result = check_api(
@@ -79,9 +83,27 @@ def check_api_command(
             timeout_seconds=configuration.api.timeout_seconds,
         )
     except (ConfigError, ApiCheckError) as error:
+        logger.error(
+            "API health check failed",
+            extra={
+                "event": "api_check_failure",
+                "config_path": str(path),
+                "error": str(error),
+            },
+        )
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(code=1) from error
 
+    logger.info(
+        "API health check succeeded",
+        extra={
+            "event": "api_check_success",
+            "url": result.url,
+            "status_code": result.status_code,
+            "response_time_ms": round(result.response_time_ms, 2),
+            "config_path": str(path),
+        },
+    )
     json_keys = ", ".join(sorted(result.data))
 
     typer.echo(f"API healthy: {result.url}")

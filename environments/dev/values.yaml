@@ -1,0 +1,5 @@
+environment: dev
+replicaCount: 1
+image:
+  repository: replace-with-acr-name.azurecr.io/platform-api
+  tag: latest

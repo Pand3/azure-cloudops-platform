@@ -9,6 +9,7 @@ import typer
 from cloudops import __version__
 from cloudops.api import ApiCheckError, check_api
 from cloudops.config import ConfigError, load_config
+from cloudops.files import ScaffoldError, scaffold_environment
 from cloudops.log_analyser import LogAnalysisError, analyse_log
 from cloudops.logging_config import setup_logging
 
@@ -23,10 +24,12 @@ app = typer.Typer(
 config_app = typer.Typer(help="Manage platform configuration.")
 api_app = typer.Typer(help="Check platform APIs.")
 logs_app = typer.Typer(help="Analyse platform logs.")
+files_app = typer.Typer(help="Generate CloudOps environment files.")
 
 app.add_typer(config_app, name="config")
 app.add_typer(api_app, name="api")
 app.add_typer(logs_app, name="logs")
+app.add_typer(files_app, name="files")
 
 
 @app.callback()
@@ -156,6 +159,51 @@ def analyse_logs_command(
     typer.echo(f"Failed API checks: {summary.failed_checks}")
     typer.echo(f"Average response time: {average_response_time}")
     typer.echo(f"HTTP status codes: {status_codes}")
+
+
+@files_app.command("scaffold")
+def scaffold_files_command(
+    environment: Annotated[
+        str,
+        typer.Argument(help="Environment to scaffold: dev, staging or prod."),
+    ],
+    output_directory: Annotated[
+        Path,
+        typer.Option(
+            "--output-dir",
+            "-o",
+            help="Directory in which environment files will be created.",
+        ),
+    ] = Path("environments"),
+    dry_run: Annotated[
+        bool,
+        typer.Option(
+            "--dry-run",
+            help="Show planned files without creating them.",
+        ),
+    ] = False,
+) -> None:
+    """Create starter configuration files for an environment."""
+
+    try:
+        result = scaffold_environment(
+            environment,
+            output_directory,
+            dry_run=dry_run,
+        )
+    except ScaffoldError as error:
+        typer.echo(f"Error: {error}", err=True)
+        raise typer.Exit(code=1) from error
+
+    if result.created:
+        typer.echo(f"Created environment: {result.directory}")
+        prefix = "Created"
+    else:
+        typer.echo(f"Dry run for environment: {result.directory}")
+        prefix = "Would create"
+
+    for file_path in result.files:
+        typer.echo(f"{prefix}: {file_path}")
 
 
 if __name__ == "__main__":

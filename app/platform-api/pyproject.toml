@@ -9,6 +9,7 @@ description = "Operational API deployed by the Azure CloudOps Platform"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi",
+    "prometheus-client",
     "pydantic-settings",
     "uvicorn[standard]",
 ]

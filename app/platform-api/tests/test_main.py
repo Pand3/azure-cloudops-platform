@@ -52,3 +52,15 @@ def test_version_endpoint_uses_environment_variables(monkeypatch) -> None:
         "version": "abc1234",
         "environment": "staging",
     }
+
+
+def test_metrics_endpoint() -> None:
+    """The metrics endpoint should expose Prometheus data."""
+
+    client.get("/health")
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/plain")
+    assert "platform_api_http_requests_total" in response.text
+    assert "platform_api_http_request_duration_seconds" in response.text

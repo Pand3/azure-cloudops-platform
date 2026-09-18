@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request, Response
 
 from platform_api.config import get_settings
 from platform_api.logging_config import setup_logging
+from platform_api.metrics import record_request, render_metrics
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -28,8 +29,19 @@ async def log_http_request(request: Request, call_next) -> Response:
 
     response = await call_next(request)
 
-    duration_ms = (perf_counter() - start_time) * 1000
+    duration_seconds = perf_counter() - start_time
+    duration_ms = duration_seconds * 1000
     response.headers["X-Request-ID"] = request_id
+
+    route = request.scope.get("route")
+    route_path = getattr(route, "path", "unmatched")
+
+    record_request(
+        method=request.method,
+        path=route_path,
+        status_code=response.status_code,
+        duration_seconds=duration_seconds,
+    )
 
     logger.info(
         "HTTP request completed",
@@ -75,3 +87,15 @@ async def version() -> dict[str, str]:
         "version": settings.app_version,
         "environment": settings.environment,
     }
+
+
+@app.get("/metrics", include_in_schema=False)
+async def metrics() -> Response:
+    """Expose Prometheus metrics."""
+
+    content, media_type = render_metrics()
+
+    return Response(
+        content=content,
+        media_type=media_type,
+    )

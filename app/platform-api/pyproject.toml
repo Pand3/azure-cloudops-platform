@@ -9,6 +9,7 @@ description = "Operational API deployed by the Azure CloudOps Platform"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi",
+    "pydantic-settings",
     "uvicorn[standard]",
 ]
 
@@ -20,3 +21,4 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+

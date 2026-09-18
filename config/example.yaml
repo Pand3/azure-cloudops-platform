@@ -12,4 +12,5 @@ kubernetes:
 
 api:
   base_url: https://httpbin.org
+  health_path: /get
   timeout_seconds: 10

@@ -21,6 +21,7 @@ kubernetes:
 
 api:
   base_url: https://example.com
+  health_path: /health
   timeout_seconds: 10
 """
 
@@ -82,3 +83,16 @@ def test_reject_missing_file(tmp_path: Path) -> None:
 
     with pytest.raises(ConfigError, match="Could not read"):
         load_config(missing_path)
+
+
+def test_reject_health_path_without_leading_slash(tmp_path: Path) -> None:
+    """The health path must begin with a forward slash."""
+
+    invalid_config = VALID_CONFIG.replace(
+        "health_path: /health",
+        "health_path: health",
+    )
+    config_path = write_config(tmp_path, invalid_config)
+
+    with pytest.raises(ConfigError, match="Configuration validation failed"):
+        load_config(config_path)

@@ -36,6 +36,7 @@ kubernetes:
 
 api:
   base_url: https://example.com
+  health_path: /health
   timeout_seconds: 10
 """,
         encoding="utf-8",

@@ -38,6 +38,7 @@ class ApiConfig(StrictModel):
     """REST API configuration."""
 
     base_url: HttpUrl
+    health_path: str = Field(min_length=1, pattern=r"^/")
     timeout_seconds: int = Field(gt=0, le=60)
 
 

@@ -21,10 +21,14 @@ class ApiCheckError(Exception):
     """Raised when an API health check fails."""
 
 
-def check_api(base_url: str, timeout_seconds: float) -> ApiCheckResult:
+def check_api(
+    base_url: str,
+    timeout_seconds: float,
+    health_path: str = "/get",
+) -> ApiCheckResult:
     """Check an API endpoint and return its response information."""
 
-    url = f"{base_url.rstrip('/')}/get"
+    url = f"{base_url.rstrip('/')}/{health_path.lstrip('/')}"
     start_time = perf_counter()
 
     try:

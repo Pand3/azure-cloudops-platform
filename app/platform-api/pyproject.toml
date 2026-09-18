@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cloudops-platform-api"
+version = "0.1.0"
+description = "Operational API deployed by the Azure CloudOps Platform"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx2>=2.13,<3.0",
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

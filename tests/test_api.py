@@ -10,7 +10,7 @@ def test_successful_api_check(monkeypatch: pytest.MonkeyPatch) -> None:
     """A successful JSON response should return an API check result."""
 
     def fake_get(url: str, timeout: float) -> httpx.Response:
-        assert url == "https://example.com/get"
+        assert url == "https://example.com/health"
         assert timeout == 10
 
         request = httpx.Request("GET", url)
@@ -22,9 +22,13 @@ def test_successful_api_check(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(httpx, "get", fake_get)
 
-    result = check_api("https://example.com", 10)
+    result = check_api(
+        "https://example.com/",
+        10,
+        health_path="/health",
+    )
 
-    assert result.url == "https://example.com/get"
+    assert result.url == "https://example.com/health"
     assert result.status_code == 200
     assert result.response_time_ms >= 0
     assert result.data == {"status": "healthy"}

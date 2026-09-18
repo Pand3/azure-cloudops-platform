@@ -79,7 +79,8 @@ def scaffold_environment(
             "replicas": 1 if environment == "dev" else 2,
         },
         "api": {
-            "base_url": "https://httpbin.org",
+            "base_url": "http://127.0.0.1:8000",
+            "health_path": "/health",
             "timeout_seconds": 10,
         },
     }

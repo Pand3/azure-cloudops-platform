@@ -88,6 +88,7 @@ def check_api_command(
         result = check_api(
             base_url=str(configuration.api.base_url),
             timeout_seconds=configuration.api.timeout_seconds,
+            health_path=configuration.api.health_path,
         )
     except (ConfigError, ApiCheckError) as error:
         logger.error(
